@@ -6,9 +6,16 @@ export interface Topic {
   format: "standard" | "hot-topic";
 }
 
-export interface RankedTopic extends Topic {
+// Not `extends Topic` — /api/rank drops why_trending when it re-shapes the
+// merged list, so a RankedTopic never actually has it. Keep this in sync
+// with the "ranked_topics" JSON schema in app/api/rank/route.ts.
+export interface RankedTopic {
   rank: number;
+  title: string;
   source: "Research" | "Your idea" | "Your idea + trending";
+  pillar: string;
+  format: "standard" | "hot-topic";
+  angle: string;
   why_now: string;
 }
 

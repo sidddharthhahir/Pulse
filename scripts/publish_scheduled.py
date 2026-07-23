@@ -10,7 +10,7 @@ Usage:
     python scripts/publish_scheduled.py --dry-run   # force dry-run regardless of token
 
 To automate on macOS, add a cron entry, e.g. every 15 minutes:
-    */15 * * * * cd /path/to/cadence && python3 scripts/publish_scheduled.py >> pipeline_state/scheduled.log 2>&1
+    */15 * * * * cd /path/to/pulse && python3 scripts/publish_scheduled.py >> pipeline_state/scheduled.log 2>&1
 """
 
 import argparse
