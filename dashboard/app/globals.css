@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Signal Terminal design tokens ─────────────────────────────────────────── */
+:root {
+  --bg: oklch(0.145 0.004 90);
+  --panel: oklch(0.19 0.006 90);
+  --border: oklch(0.32 0.01 150 / 0.4);
+  --border-soft: oklch(0.32 0.01 150 / 0.25);
+  --accent: oklch(0.82 0.19 150);
+  --accent-bright: oklch(0.88 0.19 150);
+  --on-accent: oklch(0.14 0.01 150);
+  --text: oklch(0.9 0.01 90);
+  --text-body: oklch(0.78 0.01 90);
+  --muted: oklch(0.62 0.01 90);
+  --dim: oklch(0.55 0.01 90);
+  --faint: oklch(0.42 0.01 90);
+  --danger: oklch(0.65 0.2 25);
+  --warn: oklch(0.78 0.16 85);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ── Texture overlays: faint scanline + grid, then a darker scanline pass ─── */
+.terminal-texture::before,
+.terminal-texture::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+.terminal-texture::before {
+  opacity: 0.05;
+  background-image:
+    repeating-linear-gradient(0deg, oklch(0.82 0.19 150) 0px, transparent 1px, transparent 3px),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 39px, oklch(0.82 0.19 150 / 0.4) 40px);
+}
+.terminal-texture::after {
+  opacity: 0.035;
+  background: repeating-linear-gradient(0deg, #000 0px, transparent 1px, transparent 2px);
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
+@keyframes pbar {
+  0%, 100% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
+}
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+@keyframes toastIn {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes phaseIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes ecgDash {
+  from { stroke-dashoffset: 480; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes nodePulse {
+  0%, 100% { box-shadow: 0 0 4px oklch(0.82 0.19 150 / 0.5); }
+  50% { box-shadow: 0 0 12px oklch(0.82 0.19 150 / 0.9); }
+}
+
+.animate-phase-in { animation: phaseIn 0.3s ease-out; }
+.animate-toast-in { animation: toastIn 0.25s ease-out; }
+
+/* ── Reusable primitives ───────────────────────────────────────────────────── */
+.panel {
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+.panel-outline {
+  border: 1px solid var(--border);
+}
+.dashed-empty {
+  border: 1px dashed oklch(0.4 0.01 90 / 0.4);
+  padding: 32px;
+  text-align: center;
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+.btn-primary {
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  padding: 13px 24px;
+  cursor: pointer;
+}
+.btn-primary:disabled {
+  background: oklch(0.32 0.01 150 / 0.4);
+  color: var(--dim);
+  cursor: not-allowed;
+}
+.btn-outline {
+  font-weight: 600;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid oklch(0.82 0.19 150 / 0.55);
+  padding: 13px 24px;
+  cursor: pointer;
+}
+.btn-outline:disabled {
+  color: var(--dim);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+.btn-sm { padding: 9px 16px; font-size: 13px; }
+
+.terminal-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.terminal-input:focus {
+  outline: none;
+  border-color: oklch(0.82 0.19 150 / 0.6);
+}
+
+a { color: var(--accent); }
+a:hover { color: var(--accent-bright); text-decoration: underline; }
+
+::selection {
+  background: oklch(0.82 0.19 150 / 0.3);
+}

@@ -1,0 +1,31 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Dashboard (Next.js)
+dashboard/node_modules/
+dashboard/.next/
+dashboard/.env.local
+dashboard/public/visuals/
+dashboard/tsconfig.tsbuildinfo
+
+# Runtime data — your run history, drafts, schedule, and usage stats.
+# Personal to your machine; a fresh clone starts with none of this.
+pipeline_state/
+
+# Your personal setup facts (name, email, resume, LinkedIn URL) — used once
+# to bootstrap /setup, never meant to be shared or committed.
+HANDOFF_PROMPT.md
+
+# Personalized once /setup runs — starts as a clean template in the repo,
+# your real answers should stay local only.
+knowledge_base/profile.md
+knowledge_base/writing_samples.md
+knowledge_base/strategy_log.md
