@@ -31,6 +31,9 @@ export default function PostApprovalCard({
   const [submitting, setSubmitting] = useState(false);
   const [scheduleValue, setScheduleValue] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [showReasoning, setShowReasoning] = useState(false);
+
+  const hasReasoning = Boolean(draft.reasoning?.angle_why || draft.reasoning?.edit_changes?.length);
 
   return (
     <div className="panel px-8 py-7 space-y-4">
@@ -55,6 +58,34 @@ export default function PostApprovalCard({
         </div>
       )}
       <pre className="whitespace-pre-wrap font-sans text-[15px] leading-[1.75] text-term-body">{draft.text}</pre>
+
+      {hasReasoning && (
+        <div>
+          <button
+            className="font-mono text-[11.5px] tracking-[0.06em] text-term-dim uppercase cursor-pointer hover:text-term-accent transition-colors"
+            onClick={() => setShowReasoning((v) => !v)}
+          >
+            {showReasoning ? "▾" : "▸"} why this draft
+          </button>
+          {showReasoning && (
+            <div className="panel-outline p-3.5 mt-2 space-y-2 text-[13px] text-term-dim animate-phase-in">
+              {draft.reasoning?.angle_why && (
+                <div>
+                  <span className="text-term-faint">angle: </span>
+                  {draft.reasoning.angle_why}
+                </div>
+              )}
+              {draft.reasoning?.edit_changes?.map((change, i) => (
+                <div key={i}>
+                  <span className="text-term-faint">edit: </span>
+                  {change}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {localError && (
         <div className="font-mono text-[12.5px] px-3.5 py-2.5" style={{ border: "1px solid oklch(0.65 0.2 25 / 0.5)", color: "var(--danger)" }}>
           {localError}

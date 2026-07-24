@@ -32,11 +32,17 @@ export interface HookOption {
   type: "Raw number" | "Provocative" | "Curiosity gap";
   text: string;
   recommended?: boolean;
+  why?: string;
 }
 
 export interface TopicHooks {
   topic_title: string;
   hooks: HookOption[];
+}
+
+export interface DraftReasoning {
+  angle_why?: string;
+  edit_changes?: string[];
 }
 
 export interface Draft {
@@ -47,6 +53,7 @@ export interface Draft {
   word_count: number;
   image_path?: string;
   source_url?: string;
+  reasoning?: DraftReasoning;
 }
 
 export type Decision = "approved" | "revised" | "skipped";

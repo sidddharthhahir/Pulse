@@ -1,7 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Draft } from "@/lib/types";
+
+interface ImageNudge {
+  shouldNudge: boolean;
+  basedOnData: boolean;
+  count: number;
+}
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -34,7 +40,15 @@ export default function ImageAttachment({
   const [uploading, setUploading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nudge, setNudge] = useState<ImageNudge | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/image-nudge")
+      .then((r) => r.json())
+      .then(setNudge)
+      .catch(() => {});
+  }, []);
 
   async function generatePrompt() {
     setGenerating(true);
@@ -93,6 +107,14 @@ export default function ImageAttachment({
           style={{ border: "1px solid oklch(0.65 0.2 25 / 0.5)", color: "var(--danger)" }}
         >
           {error}
+        </div>
+      )}
+
+      {!imagePath && nudge?.shouldNudge && (
+        <div className="font-mono text-[12px] text-term-dim">
+          {nudge.basedOnData
+            ? `→ Posts with images have outperformed text-only for you so far (${nudge.count} tracked). Worth attaching one.`
+            : "→ Posts with images tend to get more reach on LinkedIn — worth attaching one."}
         </div>
       )}
 

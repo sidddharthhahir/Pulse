@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import MarkdownField from "@/components/MarkdownField";
+import VoiceDNA from "@/components/VoiceDNA";
 import { KbSection } from "@/lib/paths";
 
 const TABS: { key: KbSection; label: string }[] = [
@@ -73,6 +74,7 @@ export default function KnowledgePage() {
       ) : (
         <div key={tab} className="animate-phase-in">
           <MarkdownField label={TABS.find((t) => t.key === tab)!.label} initialValue={content} onSave={save} />
+          {tab === "writing_samples" && <VoiceDNA rawContent={content} />}
         </div>
       )}
     </div>

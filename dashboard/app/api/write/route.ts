@@ -54,7 +54,7 @@ Use this exact text as the opening line (line 1-2), followed by ONE blank line, 
 "${hook}"
 
 Respond with ONLY this JSON, nothing else:
-{"topic_title": "${topic.title.replace(/"/g, '\\"')}", "pillar": "${topic.pillar}", "hook": ${JSON.stringify(hook)}, "text": "the full post text, exactly as it would appear on LinkedIn", "word_count": 0}
+{"topic_title": "${topic.title.replace(/"/g, '\\"')}", "pillar": "${topic.pillar}", "hook": ${JSON.stringify(hook)}, "text": "the full post text, exactly as it would appear on LinkedIn", "word_count": 0, "reasoning": {"angle_why": "one sentence on which stat/example from the research brief you built the post around, and why that one over the others"}}
 
 Set word_count to the actual word count of "text".`),
           ],

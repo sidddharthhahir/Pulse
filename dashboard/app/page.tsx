@@ -6,6 +6,7 @@ import { listScheduled } from "@/lib/scheduled";
 import { getCurrentMonthUsage, estimateCostUsd } from "@/lib/usage";
 import { readKb, parsePillars } from "@/lib/knowledge-base";
 import { getTokenMeta, daysRemaining } from "@/lib/linkedin-token";
+import { getBestPostingTime } from "@/lib/analytics";
 import { ENV_PATH } from "@/lib/paths";
 import Sparkline from "@/components/Sparkline";
 
@@ -24,12 +25,13 @@ export default async function DashboardPage() {
   }
   const hasLinkedIn = Boolean(process.env.LINKEDIN_ACCESS_TOKEN);
 
-  const [runs, scheduled, usage, profile, tokenMeta] = await Promise.all([
+  const [runs, scheduled, usage, profile, tokenMeta, bestTime] = await Promise.all([
     listRuns(),
     listScheduled(),
     getCurrentMonthUsage(),
     readKb("profile"),
     hasLinkedIn ? getTokenMeta() : Promise.resolve(null),
+    getBestPostingTime(),
   ]);
   const latest = runs[0];
 
@@ -271,6 +273,24 @@ export default async function DashboardPage() {
             </div>
           )}
         </Link>
+
+        <div className="panel-outline px-7 py-6 flex-1 min-w-[240px]">
+          <div className="mono-label mb-3.5">Best posting time — early signal</div>
+          {bestTime.active && bestTime.best ? (
+            <>
+              <div className="font-mono text-[19px] font-semibold text-term-text">
+                {bestTime.best.dayOfWeek}s, ~{bestTime.best.hour}
+              </div>
+              <div className="text-[13px] text-term-dim mt-1">
+                Your top post so far went out then — {bestTime.best.impressions} impressions. Based on {bestTime.count} tracked post{bestTime.count === 1 ? "" : "s"}, not a full model yet.
+              </div>
+            </>
+          ) : (
+            <div className="text-[13px] text-term-dim">
+              Log performance on {3 - bestTime.count} more post{3 - bestTime.count === 1 ? "" : "s"} to unlock this — needs at least 3 tracked publishes.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

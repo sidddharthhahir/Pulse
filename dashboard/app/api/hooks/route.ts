@@ -38,7 +38,7 @@ ${insights ? `\n${insights}\n` : ""}
 Respond with ONLY this JSON, nothing else:
 {"topic_title": "${topic.title.replace(/"/g, '\\"')}", "hooks": [{"type": "Raw number", "text": "...", "recommended": false}, {"type": "Provocative", "text": "...", "recommended": false}, {"type": "Curiosity gap", "text": "...", "recommended": false}]}
 
-Set "recommended": true on exactly one of the three — your pick for the strongest hook — and leave the other two false.`),
+Set "recommended": true on exactly one of the three — your pick for the strongest hook — and leave the other two false. On the recommended one only, add a "why" field: one short sentence on why it beats the other two for this specific topic.`),
           ],
           },
         ],

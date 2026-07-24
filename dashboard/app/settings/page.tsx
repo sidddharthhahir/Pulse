@@ -49,6 +49,18 @@ export default async function SettingsPage() {
         />
       </div>
 
+      <div className="panel-outline px-8 py-7 mb-6">
+        <div className="font-semibold text-base mb-1.5">Backup</div>
+        <p className="text-term-dim text-sm leading-relaxed mb-4">
+          Your voice, rules, and run history live only on this machine. Download a zip of{" "}
+          <span className="font-mono">knowledge_base/</span> and <span className="font-mono">pipeline_state/</span> —
+          keep it somewhere that isn&apos;t this laptop.
+        </p>
+        <a href="/api/export" className="btn-outline btn-sm no-underline hover:no-underline inline-block">
+          Export backup (.zip)
+        </a>
+      </div>
+
       <p className="text-[13px] text-term-faint">
         Secrets are never displayed here — only whether they&apos;re set. Edit{" "}
         <span className="font-mono">.env</span> directly to change them.

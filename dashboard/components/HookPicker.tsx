@@ -65,6 +65,9 @@ export default function HookPicker({
                       </span>
                     )}
                     &quot;{h.text}&quot;
+                    {h.recommended && h.why && (
+                      <span className="block text-[12.5px] text-term-dim mt-1 italic">— {h.why}</span>
+                    )}
                   </span>
                 </label>
               );
