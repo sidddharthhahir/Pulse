@@ -22,7 +22,7 @@ export default function Sidebar() {
 
   return (
     <nav className="w-[264px] shrink-0 border-r border-term-soft px-5 py-8 flex flex-col gap-1 h-screen sticky top-0">
-      <div className="flex items-center gap-3 mb-10 px-2">
+      <Link href="/" className="flex items-center gap-3 mb-10 px-2 no-underline hover:no-underline">
         <div
           className="w-8 h-8 flex items-center justify-center font-mono font-bold text-term-accent"
           style={{
@@ -32,7 +32,7 @@ export default function Sidebar() {
         >
           P
         </div>
-        <div className="font-mono font-semibold tracking-[0.12em] text-[15px]">PULSE</div>
+        <div className="font-mono font-semibold tracking-[0.12em] text-[15px] text-term-text">PULSE</div>
         <div className="flex items-end gap-[2px] h-[14px] ml-auto">
           {EQ_DELAYS.map((delay) => (
             <div
@@ -42,7 +42,7 @@ export default function Sidebar() {
             />
           ))}
         </div>
-      </div>
+      </Link>
 
       <ul className="space-y-1">
         {NAV.map((item) => {
