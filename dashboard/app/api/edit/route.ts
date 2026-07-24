@@ -30,7 +30,7 @@ ${content_rules}
 ## Draft
 ${draft.text}
 
-Checklist: clear opinion someone could disagree with; Mode A or C, never B; hook earns the scroll-stop; no AI-sounding or corporate phrasing; cut any sentence that could be cut without loss; word count within the stated range.
+Checklist: clear opinion someone could disagree with; Mode A or C, never B; hook earns the scroll-stop; no AI-sounding or corporate phrasing; cut any sentence that could be cut without loss; word count within the stated range; skim test — reading only the hook and any arrow-list lines, does the opinion still land; any sentence over ~20 words or three same-length sentences in a row broken up; any paragraph hiding 2+ parallel points that should be an arrow list (→) instead.
 
 Respond with ONLY this JSON, nothing else:
 {"topic_title": ${JSON.stringify(draft.topic_title)}, "pillar": ${JSON.stringify(draft.pillar)}, "hook": ${JSON.stringify(draft.hook)}, "text": "the polished full post text", "word_count": 0}

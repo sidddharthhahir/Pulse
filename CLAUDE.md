@@ -1,84 +1,54 @@
 # Pulse
 
-A multi-agent LinkedIn content pipeline that runs inside Claude Code. It researches topics, drafts posts in the user's voice, manages approvals, optionally publishes to LinkedIn, and logs to Notion. No Anthropic API key required — Claude Code is the model.
+A LinkedIn content pipeline: research topics, write posts in the user's voice, hold for approval, publish. Runs as a standalone Next.js dashboard (`dashboard/`) that calls the Claude API directly — no other execution mode. `ANTHROPIC_API_KEY` is required; `LINKEDIN_ACCESS_TOKEN` is optional and gates real publishing vs. dry-run.
 
-**Never publish a post without explicit approval at the approval checkpoint. Never overwrite the user's knowledge base without telling them.**
+**Never publish a post without explicit approval at the review checkpoint. Never overwrite the user's knowledge base without telling them.**
 
 ---
 
 ## Who this is for
 
-The user — defined by them during `/setup`. Their identity, audience, goals, content pillars, voice, and story bank all live in `knowledge_base/profile.md` and `knowledge_base/writing_samples.md`. Read those first; they are the source of truth for who this is and how they sound. If the knowledge base is still a template, the user hasn't run `/setup` yet — point them to it.
-
----
-
-## How to run
-
-**First time:**
-```
-/setup
-```
-Interviews the user and writes their knowledge base. Must run before the pipeline produces good output.
-
-**Create content:**
-```
-/run-pipeline
-/run-pipeline --niche "..." --ideas "topic 1\ntopic 2"
-```
-
-**Feed a strong post back into voice training:**
-```
-/add-writing-sample
-```
-
-**Periodic strategy review:**
-```
-/linkedin-manager
-```
-
-**Publishing (optional):**
-```
-pip install -r requirements.txt
-python scripts/publish_post.py --dry-run --topic "TITLE" --text "POST TEXT"
-```
+The user's identity, audience, goals, content pillars, voice, and story bank live in `knowledge_base/profile.md` and `knowledge_base/writing_samples.md` — read those first; they're the source of truth for who this is and how they sound. If `knowledge_base/profile.md` is still the placeholder template (bracketed `[...]` fields), the user hasn't set up yet — point them to the Knowledge page in the dashboard sidebar.
 
 ---
 
 ## Architecture
 
 ```
-/setup             →  Onboarding wizard (writes the knowledge base)
-/linkedin-manager  →  Strategy layer (periodic review)
-/run-pipeline      →  Orchestrator (spawns agents, runs each session)
-.claude/agents/    →  8 sub-agents (isolated workers, own context windows)
+dashboard/app/page.tsx            →  Dashboard (stats, pillar balance, Idea Bank backlog)
+dashboard/app/pipeline/page.tsx   →  Discover → Develop → Write → Ship & Learn, client-driven
+dashboard/app/api/*/route.ts      →  One route per pipeline stage, each calls Claude directly
+dashboard/app/idea-bank/page.tsx  →  Revisit discarded topics + skipped drafts (nothing is wasted)
+dashboard/app/{drafts,scheduled,comments,knowledge,logs,settings}/  →  supporting pages
+dashboard/lib/                    →  fs-backed persistence (pipeline_state/), Claude client, types
+scripts/publish_post.py           →  called by /api/publish and /api/scheduled/[id]
+scripts/publish_scheduled.py      →  run on a schedule (launchd/cron) outside the dashboard —
+                                      fires due scheduled posts even when the app isn't open
+knowledge_base/                   →  the user's profile, voice, content rules (their data, not code)
+pipeline_state/                   →  run history, drafts, schedule, usage — gitignored, local only
 ```
 
-**The agents:** researcher · topic-ranker · topic-deep-researcher · hook-factory · content-writer · style-editor · strategy-analyzer (coordinated by the orchestrator).
+**Pipeline stages** (each a route under `dashboard/app/api/`): `research` → `rank` → (user picks topics) → `deep-research` + `hooks` per topic → (user picks/confirms hooks — Claude pre-recommends one of 3) → `write` + `edit` per topic → (user approves/revises/schedules) → `publish`.
 
-**Why sub-agents:** each has an isolated context window. Only the result returns to the orchestrator — not the search noise. Keeps the orchestrator lean across a full run.
+**Cost discipline, load-bearing, don't regress it:**
+- `thinking: { type: "disabled" }` (via `THINKING_DISABLED` in `lib/claude.ts`) on every JSON-extraction stage (research, rank, deep-research, hooks, edit, comment, image-prompt). Sonnet 5 runs adaptive thinking by *default* when `thinking` is omitted — leaving it off costs real money for reasoning these stages don't need. `write` is the one stage that keeps adaptive thinking on, deliberately.
+- `staticBlock()` / `dynamicBlock()` (also in `lib/claude.ts`) split prompts into a cached static prefix (KB text, instructions) and an uncached dynamic suffix (per-topic data) — this is what makes prompt caching actually hit across the 3 topics in one run. Don't collapse these back into a single string; that silently kills the cache.
+- Per-run usage is tracked via `recordRunUsage` (pass `run_id` through `createTracked`) so the dashboard can show what one run cost, not just a monthly total.
 
 ---
 
 ## Key files
 
-**Commands (the user types these):**
-- `.claude/commands/setup.md` — onboarding wizard
-- `.claude/commands/run-pipeline.md` — main orchestrator
-- `.claude/commands/add-writing-sample.md` — add a post to voice samples
-- `.claude/commands/linkedin-manager.md` — strategy + analytics review
-
-**Knowledge base (read before writing any post; the user owns these):**
-- `knowledge_base/profile.md` — identity, audience, pillars, story bank
-- `knowledge_base/content_rules.md` — post format rules (treat as law)
-- `knowledge_base/writing_samples.md` — the user's raw voice
-- `knowledge_base/high_performing_posts.md` — structural patterns to study
-- `knowledge_base/strategy_log.md` — running session history
+- `dashboard/lib/paths.ts` — every filesystem path + `safeId()`/`resolvePublicAsset()` (path-traversal guards; use them any time an ID or web path from a request becomes a real filesystem path)
+- `dashboard/lib/claude.ts` — the only place that should call the Anthropic SDK directly; every route goes through `createTracked()`
+- `dashboard/lib/types.ts` — `RunRecord` is the persisted shape of one pipeline run; keep it in sync with what the API routes actually return (it's bitten before — `RankedTopic` used to claim a field `/api/rank` never sent)
+- `knowledge_base/content_rules.md` — the post-writing rules, treated as law by `write`/`edit`. Has an explicit anti-essay section (sentence-rhythm limits, mandatory arrow-lists for parallel points) — LinkedIn posts get skimmed, not read, and it's easy for output to drift back into dense uniform paragraphs without that enforced.
 
 ---
 
 ## Golden rules
 
-1. **Approval is sacred.** Nothing publishes without the user saying yes at the approval checkpoint.
+1. **Approval is sacred.** Nothing publishes without the user saying yes at the review checkpoint.
 2. **The voice is theirs.** Calibrate to `writing_samples.md` + `profile.md`. Never corporate-ify it.
-3. **The user controls learning.** Propose KB changes; apply only what they approve.
-4. **Opinion over information.** Every post needs a held view, not a summary.
+3. **Opinion over information.** Every post needs a held view, not a summary — and needs to read like a post, not an article (see content_rules.md's rhythm/scannability section).
+4. **Fix root causes, not symptoms.** Cost, dead links, and stale docs in this repo have all previously been "fixed" by patching the symptom once already — check *why* before patching again (e.g. the scheduled-publish launchd job silently failing because of a hardcoded path after a folder rename was a real incident, not hypothetical).

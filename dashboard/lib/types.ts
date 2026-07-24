@@ -29,8 +29,9 @@ export interface ResearchBrief {
 }
 
 export interface HookOption {
-  type: "Raw number" | "Provocative" | "Admission + reversal" | "Contrast" | "Specific moment" | "Curiosity gap";
+  type: "Raw number" | "Provocative" | "Curiosity gap";
   text: string;
+  recommended?: boolean;
 }
 
 export interface TopicHooks {

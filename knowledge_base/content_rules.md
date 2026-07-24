@@ -1,6 +1,6 @@
 # Content Operating Rules
 
-> Sensible defaults ship here so the pipeline works out of the box. `/setup` personalizes the user-specific parts (length, hashtags, emoji, CTA, banned words). Treat this file as law during writing and editing.
+> Sensible defaults ship here so the pipeline works out of the box. Edit the "User preferences" section below (length, hashtags, emoji, CTA, banned words) from the Knowledge page to personalize it. Treat this file as law during writing and editing.
 
 ## Platform
 - LinkedIn, text posts
@@ -22,12 +22,28 @@
 3. **Insight:** the "so what" — one clean opinion, not a restatement.
 4. **CTA:** one action. Usually a question to drive comments.
 
+## Rhythm & scannability — this is a feed post, not an article
+
+A LinkedIn feed is skimmed, not read. If a post reads like a mini-essay — uniform paragraph lengths, every sentence doing equal work, no visual break — it gets scrolled past no matter how good the idea is. Every post must pass this test:
+
+- **Someone skimming (not reading word-for-word) still gets the opinion.** If the point only lands after reading every sentence carefully, it's written like an article, not a post.
+- **No sentence over ~20 words.** If a sentence needs a comma to pack in a second idea, split it into two lines instead. Long compound sentences ("The result is real: an infinite family of X, verified by Y, which Z said Q about...") are the single biggest tell of essay-mode.
+- **Vary the rhythm.** Mix short punchy lines (3–8 words, a full line to themselves) with medium ones. Never three same-length sentences in a row — that flattens into a monotone drone.
+- **When a post has 2+ parallel points, examples, or lessons, break them into an arrow list.** Don't bury parallel ideas inside a paragraph — if you're about to write "X does A, B, and C," stop and make it:
+  ```
+  → A
+  → B
+  → C
+  ```
+  This isn't optional decoration — a wall of prose where a list belongs is exactly what makes a post feel like an essay.
+- **One idea per line-break.** A new paragraph = a new beat, not a continuation of the last thought with more caveats bolted on.
+
 ## Formatting
 - Short paragraphs. White space is not wasted space.
-- Arrow lists (→) for takeaways. Numbered lists only for real sequences.
+- Arrow lists (→) for any 2+ parallel points — required, not optional (see Rhythm above).
 - Zero buzzwords: "leverage", "synergy", "impactful", "passionate", "excited to share".
 
-## User preferences (set by /setup)
+## User preferences (edit from the Knowledge page)
 - **Length:** medium (150–250 words). Never over 350.
 - **Hashtags:** 3–5, relevant, at the very end.
 - **Emoji:** minimal.
@@ -40,3 +56,6 @@
 - Hook earns the scroll-stop?
 - Any line that sounds like AI or corporate speak — rewritten?
 - Any sentence that could be cut without loss — cut it.
+- **Skim test: read only the hook + any arrow-list lines, skipping the paragraphs. Does the opinion still land? If not, the post is leaning on prose to do a list's job — fix it.**
+- Any sentence over ~20 words, or three same-length sentences in a row? Break the rhythm.
+- Are 2+ parallel points sitting in a paragraph instead of an arrow list? Pull them out.

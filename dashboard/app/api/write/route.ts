@@ -39,7 +39,9 @@ ${kb.content_rules}
 ## Voice reference
 ${kb.writing_samples}
 
-Write the complete post now, following the content rules exactly (structure, length, hashtags, CTA). Opinion over information — a clear held view, not a summary. Mode A (real story) or Mode C (clear point of view), never Mode B (faceless article).`),
+Write the complete post now, following the content rules exactly (structure, length, hashtags, CTA). Opinion over information — a clear held view, not a summary. Mode A (real story) or Mode C (clear point of view), never Mode B (faceless article).
+
+This is a feed post someone skims in three seconds, not an article someone sits down to read. Before you write, plan which 2+ points become an arrow list (→) instead of a paragraph — almost every post has at least one. Keep sentences short and vary their length; no sentence over ~20 words, never three same-length sentences back to back. If you catch yourself writing a compound sentence stacking two ideas with a colon or semicolon, split it into two lines instead.`),
             // Differs per topic — never cached.
             dynamicBlock(`## Topic
 Title: ${topic.title}
