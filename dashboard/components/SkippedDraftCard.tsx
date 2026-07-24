@@ -91,6 +91,15 @@ export default function SkippedDraftCard({ runId, draft: initialDraft }: { runId
     setDecision("skipped");
   }
 
+  async function handleAttachImage(imagePath: string | undefined) {
+    const withImage = { ...draft, image_path: imagePath };
+    setDraft(withImage);
+    await mutateRun(runId, (run) => ({
+      ...run,
+      drafts: run.drafts.map((d) => (d.topic_title === draft.topic_title ? withImage : d)),
+    }));
+  }
+
   return (
     <div>
       {error && (
@@ -102,6 +111,7 @@ export default function SkippedDraftCard({ runId, draft: initialDraft }: { runId
         </div>
       )}
       <PostApprovalCard
+        runId={runId}
         draft={draft}
         decision={decision === "skipped" ? undefined : decision}
         scheduledAt={scheduledAt}
@@ -109,6 +119,7 @@ export default function SkippedDraftCard({ runId, draft: initialDraft }: { runId
         onRevise={handleRevise}
         onSkip={handleSkip}
         onSchedule={handleSchedule}
+        onAttachImage={handleAttachImage}
       />
     </div>
   );

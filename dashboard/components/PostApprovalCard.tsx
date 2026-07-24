@@ -2,23 +2,28 @@
 
 import { useState } from "react";
 import { Draft } from "@/lib/types";
+import ImageAttachment from "./ImageAttachment";
 
 export default function PostApprovalCard({
   draft,
+  runId,
   decision,
   scheduledAt,
   onApprove,
   onRevise,
   onSkip,
   onSchedule,
+  onAttachImage,
 }: {
   draft: Draft;
+  runId?: string;
   decision?: "approved" | "revised" | "skipped";
   scheduledAt?: string;
   onApprove: () => void;
   onRevise: (feedback: string) => Promise<void>;
   onSkip: () => void;
   onSchedule: (isoDateTime: string) => Promise<void>;
+  onAttachImage?: (imagePath: string | undefined) => void;
 }) {
   const [revising, setRevising] = useState(false);
   const [scheduling, setScheduling] = useState(false);
@@ -34,13 +39,15 @@ export default function PostApprovalCard({
         <span className="font-mono text-[12px] text-term-dim">{draft.word_count} words</span>
       </div>
       <div className="text-[21px] font-bold leading-[1.35]">{draft.topic_title}</div>
-      {draft.image_path && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={draft.image_path}
-          alt="Generated visual for this post"
-          className="w-full max-w-sm panel-outline"
-        />
+      {decision ? (
+        draft.image_path && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={draft.image_path} alt="Attached visual" className="w-full max-w-sm panel-outline" />
+        )
+      ) : (
+        onAttachImage && (
+          <ImageAttachment draft={draft} runId={runId} imagePath={draft.image_path} onAttach={onAttachImage} />
+        )
       )}
       {draft.source_url && (
         <div className="font-mono text-[12.5px] panel-outline px-3.5 py-2.5 text-term-dim">

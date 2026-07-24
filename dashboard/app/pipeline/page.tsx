@@ -345,6 +345,16 @@ export default function PipelinePage() {
     persistRun(next);
   }
 
+  function attachImage(topicTitle: string, imagePath: string | undefined) {
+    setDrafts((ds) => ds.map((d) => (d.topic_title === topicTitle ? { ...d, image_path: imagePath } : d)));
+    const next = {
+      ...run,
+      drafts: run.drafts.map((d) => (d.topic_title === topicTitle ? { ...d, image_path: imagePath } : d)),
+    };
+    setRun(next);
+    persistRun(next);
+  }
+
   const allDecided = drafts.length > 0 && drafts.every((d) => run.decisions[d.topic_title]);
 
   async function finishRun() {
@@ -439,12 +449,14 @@ export default function PipelinePage() {
             {drafts.map((draft) => (
               <PostApprovalCard
                 key={draft.topic_title}
+                runId={run.id}
                 draft={run.decisions[draft.topic_title]?.final_text ? { ...draft, text: run.decisions[draft.topic_title].final_text! } : draft}
                 decision={run.decisions[draft.topic_title]?.decision}
                 scheduledAt={run.decisions[draft.topic_title]?.scheduled_at}
                 onApprove={() => decide(draft.topic_title, "approved")}
                 onSkip={() => decide(draft.topic_title, "skipped")}
                 onSchedule={(isoDateTime) => scheduleDraft(draft.topic_title, isoDateTime)}
+                onAttachImage={(imagePath) => attachImage(draft.topic_title, imagePath)}
                 onRevise={async (feedback) => {
                   const revised = await postJson<Draft>("/api/edit", { draft, feedback, run_id: run.id });
                   const withImage = { ...revised, image_path: draft.image_path, source_url: draft.source_url };

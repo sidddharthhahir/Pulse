@@ -11,6 +11,7 @@ export const SCHEDULED_DIR = path.join(PIPELINE_STATE_DIR, "scheduled");
 export const LINKEDIN_TOKEN_META_PATH = path.join(PIPELINE_STATE_DIR, "linkedin_token_meta.json");
 export const SCRIPTS_DIR = path.join(REPO_ROOT, "scripts");
 export const ENV_PATH = path.join(REPO_ROOT, ".env");
+export const VISUALS_DIR = path.join(process.cwd(), "public", "visuals");
 
 export const KB_FILES = {
   profile: path.join(KB_DIR, "profile.md"),
