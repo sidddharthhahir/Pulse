@@ -30,10 +30,12 @@ ${profile}
 Use AT MOST 6-7 targeted web searches total (not one per topic) to find 10-12 trending topics that fit this specific person's content pillars and audience — nothing generic, nothing off-pillar. Be efficient — a couple of well-chosen broad searches beat many narrow ones. Pull from a mix of these sources, not just general news:
 
 1. Industry news — include at least one "hot-topic" item: a major AI news story from this week where the real implication isn't obvious from the headline (a "reading between the lines" angle).
-2. Competitor LinkedIn posts — search site:linkedin.com/posts for what's getting engagement right now from other AI/tech creators in adjacent spaces. Mine these for angles and "what's resonating" signal, not for content to copy.
-3. X/Twitter discourse — search site:x.com or site:twitter.com for real-time AI engineering takes and debates.
+2. Competitor LinkedIn posts — search for what other LinkedIn creators in AI/tech are posting about and getting engagement on right now. Mine these for angles and "what's resonating" signal, not for content to copy. Use plain-language search queries, not site: operators — they tend to return empty on this tool.
+3. X/Twitter discourse — search for real-time AI engineering takes and debates circulating on X/Twitter this week. Same rule — plain-language queries, not site: operators.
 
-If a source turns up nothing useful, drop it rather than forcing a topic — don't invent a "trending on X" claim you didn't actually find in search results.
+Budget roughly 2 searches per source. If a search comes back empty or unhelpful, do NOT retry it — move on to the next source immediately. Never spend more than one retry total across the whole task.
+
+CRITICAL: no matter what happens with search — even if a source turns up nothing, even if you're on your last search — your response MUST end with the JSON object below and nothing else. Never respond with commentary about your search process, an explanation that you're retrying, or anything other than the final JSON. Drop a source that came up empty rather than forcing a topic from it, but always output the JSON.
 
 Respond with ONLY this JSON, nothing else:
 {"topics": [{"title": "...", "why_trending": "...", "angle": "...", "pillar": "...", "format": "standard"}]}
