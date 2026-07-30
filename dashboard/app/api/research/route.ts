@@ -40,7 +40,13 @@ CRITICAL: no matter what happens with search — even if a source turns up nothi
 Respond with ONLY this JSON, nothing else:
 {"topics": [{"title": "...", "why_trending": "...", "angle": "...", "pillar": "...", "format": "standard"}]}
 
-"format" is "standard" or "hot-topic". "pillar" must be one of the pillars listed in the profile above, verbatim. "why_trending" should name where you actually saw this (e.g. "OpenAI's blog this week", "seen resurfacing across several LinkedIn AI-engineering posts", "trending in X's AI eng discourse") — never fabricate a source.`,
+"format" is one of:
+- "hot-topic" — a major AI news story from this week where the real implication isn't obvious from the headline.
+- "expose" — a hidden decision, policy, or mechanism you found (a config change, a quiet policy, an undisclosed tradeoff) where you can explain the incentive behind it and then critique how it was handled, not just that it happened. Only tag this if you actually found a real hidden-thing-with-a-reason, not a generic criticism.
+- "listicle" — a topic that's naturally a collection of concrete, specific techniques/tools/tips rather than a single argument (e.g. prompt patterns, workflow tricks, debugging techniques). Only tag this if you can back it with several genuinely distinct concrete items, not padding one idea into a fake list.
+- "standard" — everything else, a single clear opinion/story.
+
+Don't force expose or listicle — most topics should stay "standard" or "hot-topic". Only tag them when the underlying material actually fits that shape. "pillar" must be one of the pillars listed in the profile above, verbatim. "why_trending" should name where you actually saw this (e.g. "OpenAI's blog this week", "seen resurfacing across several LinkedIn AI-engineering posts", "trending in X's AI eng discourse") — never fabricate a source.`,
           },
         ],
       },

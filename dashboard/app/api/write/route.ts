@@ -1,7 +1,34 @@
 import { NextResponse } from "next/server";
 import { createTracked, MODEL, extractJson, textFromMessage, staticBlock, dynamicBlock } from "@/lib/claude";
 import { readAllKb } from "@/lib/knowledge-base";
-import { Draft, RankedTopic, ResearchBrief } from "@/lib/types";
+import { Draft, PostFormat, RankedTopic, ResearchBrief } from "@/lib/types";
+
+// Structural skeletons for the two non-default formats — "standard" and
+// "hot-topic" get no extra scaffolding, they just follow the base rules.
+function formatGuidance(format: PostFormat): string {
+  if (format === "expose") {
+    return `## Structure — this is an "expose" post
+Follow this shape:
+1. Hook: state the hidden thing you found, matter-of-factly — no adjectives doing the work, just the fact.
+2. "Before you judge it, think about why" — steelman the incentive behind the decision, with real numbers/mechanism if you have them.
+3. The mechanism — show the actual hidden thing concretely (a quote, a config line, a clause), not a vague description.
+4. The pivot, stated explicitly: "the problem isn't [the decision] — it's [how it was handled/disclosed]." This line is the engine of the post.
+5. One concrete casualty — a specific instance where it caused real, tangible harm. No hedging.
+6. The counterfactual — one line on what the honest version would have looked like (a toggle, a disclosure, a setting).
+7. Closing line: a sharp one-liner that reframes the whole tension into a single sentence.`;
+  }
+  if (format === "listicle") {
+    return `## Structure — this is a "listicle" post
+Follow this shape:
+1. Hook: lead with ONE standout, fully-spelled-out concrete item — not "here are N tips." The single best item IS the hook.
+2. One line on why that first item actually works.
+3. An arrow list (→) of the remaining concrete items, each specific and usable as-is — ranked by real usefulness/frequency, not arbitrary order.
+4. A synthesis paragraph: name the underlying principle that ties the list together — this is what makes it read as insight, not just a list.
+5. Optional: one line naming what's overrated or commonly misunderstood about this topic.
+6. Closing: a specific, answerable question inviting the reader's own item — not a generic "thoughts?"`;
+  }
+  return "";
+}
 
 export async function POST(req: Request) {
   try {
@@ -48,7 +75,7 @@ Title: ${topic.title}
 Angle: ${topic.angle}
 Pillar: ${topic.pillar}
 Research brief: ${JSON.stringify(briefForWriter, null, 2)}
-
+${formatGuidance(topic.format) ? `\n${formatGuidance(topic.format)}\n` : ""}
 ## Required hook
 Use this exact text as the opening line (line 1-2), followed by ONE blank line, then the body:
 "${hook}"

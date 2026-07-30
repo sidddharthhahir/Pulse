@@ -64,6 +64,22 @@ export default function TopicChecklist({
                       HOT TOPIC
                     </span>
                   )}
+                  {t.format === "expose" && (
+                    <span
+                      className="ml-2 font-mono text-[10.5px] tracking-[0.06em] px-2 py-0.5 align-middle"
+                      style={{ border: "1px solid oklch(0.7 0.19 25 / 0.5)", color: "oklch(0.7 0.19 25)" }}
+                    >
+                      EXPOSÉ
+                    </span>
+                  )}
+                  {t.format === "listicle" && (
+                    <span
+                      className="ml-2 font-mono text-[10.5px] tracking-[0.06em] px-2 py-0.5 align-middle"
+                      style={{ border: "1px solid oklch(0.82 0.19 150 / 0.5)", color: "var(--accent)" }}
+                    >
+                      LISTICLE
+                    </span>
+                  )}
                 </div>
                 <div className="font-mono text-[12px] text-term-dim mt-1">
                   {t.pillar} · {t.source}

@@ -1,9 +1,16 @@
+// "expose" = hidden-decision-reveal structure (hook -> steelman -> mechanism
+// -> "problem isn't X, it's Y" pivot -> concrete casualty -> counterfactual).
+// "listicle" = concrete-technique-list structure (lead tip -> ranked arrow
+// list -> synthesis take -> specific question) — modeled on the user's best
+// real post to date. Both are structural templates, independent of pillar.
+export type PostFormat = "standard" | "hot-topic" | "expose" | "listicle";
+
 export interface Topic {
   title: string;
   why_trending: string;
   angle: string;
   pillar: string;
-  format: "standard" | "hot-topic";
+  format: PostFormat;
 }
 
 // Not `extends Topic` — /api/rank drops why_trending when it re-shapes the
@@ -14,7 +21,7 @@ export interface RankedTopic {
   title: string;
   source: "Research" | "Your idea" | "Your idea + trending";
   pillar: string;
-  format: "standard" | "hot-topic";
+  format: PostFormat;
   angle: string;
   why_now: string;
 }

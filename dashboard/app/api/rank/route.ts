@@ -47,7 +47,7 @@ ${ideas.length ? ideas.map((i) => `- ${i}`).join("\n") : "(none provided)"}
 Research topics (tag source "Research"):
 ${JSON.stringify(topics, null, 2)}
 
-Merge, dedupe near-duplicates, and rank on: pillar fit, story potential (can the user say something real and specific — see the story bank in the profile), audience relevance, and differentiation vs generic LinkedIn content. Preserve the "format" field. Include at least one "hot-topic" in the final list if one exists in the input. A strong personal idea with a real story and clear CTA should rank highly.
+Merge, dedupe near-duplicates, and rank on: pillar fit, story potential (can the user say something real and specific — see the story bank in the profile), audience relevance, and differentiation vs generic LinkedIn content. Preserve the "format" field from research topics as-is. For personal ideas (which arrive with no format), assign one yourself: "expose" if it's a hidden-decision reveal, "listicle" if it's naturally a list of concrete techniques, "hot-topic" if it's breaking news, otherwise "standard" — don't force expose/listicle onto something that's really just "standard". Include at least one "hot-topic" in the final list if one exists in the input. A strong personal idea with a real story and clear CTA should rank highly.
 ${
   recentlyDiscarded.length
     ? `\nThe user already saw and passed on these topics in recent runs — do not resurface them or a near-duplicate angle on the same story:\n${recentlyDiscarded.map((t) => `- ${t}`).join("\n")}\n`
