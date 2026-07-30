@@ -27,6 +27,21 @@ load_dotenv()
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEDULED_DIR = REPO_ROOT / "pipeline_state" / "scheduled"
+RUNS_DIR = REPO_ROOT / "pipeline_state" / "runs"
+
+
+def sync_publish_result_to_run(run_id: str, topic_title: str, publish_result: dict) -> None:
+    """Mirror the publish result into the parent run file's publish_results,
+    the same field the dashboard's immediate-publish path writes to. Without
+    this, the Drafts page never shows a "log performance" form for posts
+    that went out through the scheduler instead of a live approve click."""
+    run_path = RUNS_DIR / f"{run_id}.json"
+    if not run_path.exists():
+        print(f"  (run {run_id} not found — can't sync publish_results)")
+        return
+    run = json.loads(run_path.read_text())
+    run.setdefault("publish_results", {})[topic_title] = publish_result
+    run_path.write_text(json.dumps(run, indent=2))
 
 
 def main():
@@ -81,6 +96,8 @@ def main():
                 post["status"] = "published"
                 post["publish_result"] = {"dry_run": True, "output": "[DRY RUN] LinkedIn token not set"}
             print(f"  -> {post['status']}")
+            if post.get("run_id"):
+                sync_publish_result_to_run(post["run_id"], post["topic_title"], post["publish_result"])
         except Exception as e:
             post["status"] = "failed"
             post["error"] = str(e)
