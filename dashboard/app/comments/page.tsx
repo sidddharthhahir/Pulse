@@ -49,6 +49,7 @@ export default function CommentsPage() {
         className="terminal-input h-40 max-w-[900px] resize-y mb-5"
         style={{ background: "var(--panel)" }}
         placeholder="Paste the post text here..."
+        aria-label="Post text to comment on"
         value={postText}
         onChange={(e) => setPostText(e.target.value)}
       />

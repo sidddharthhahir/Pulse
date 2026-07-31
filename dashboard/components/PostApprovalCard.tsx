@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Draft } from "@/lib/types";
 import ImageAttachment from "./ImageAttachment";
+import ErrorBanner from "./ErrorBanner";
 
 export default function PostApprovalCard({
   draft,
@@ -86,11 +87,7 @@ export default function PostApprovalCard({
         </div>
       )}
 
-      {localError && (
-        <div className="font-mono text-[12.5px] px-3.5 py-2.5" style={{ border: "1px solid oklch(0.65 0.2 25 / 0.5)", color: "var(--danger)" }}>
-          {localError}
-        </div>
-      )}
+      {localError && <ErrorBanner message={localError} />}
 
       {decision ? (
         <div className="font-mono text-[13.5px] text-term-accent">
@@ -134,6 +131,7 @@ export default function PostApprovalCard({
             className="terminal-input !p-3 text-sm"
             rows={2}
             placeholder="What should change?"
+            aria-label="Revision feedback"
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
           />

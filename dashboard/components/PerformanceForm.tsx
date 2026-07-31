@@ -56,6 +56,7 @@ export default function PerformanceForm({
           key={field}
           type="number"
           placeholder={field}
+          aria-label={`${field} for "${topicTitle}"`}
           className="w-28 font-mono text-[12px] px-3 py-2 bg-transparent text-term-text"
           style={{ border: "1px solid var(--border)" }}
           value={values[field]}

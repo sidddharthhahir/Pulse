@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PipelineFlow, { FlowStage } from "@/components/PipelineFlow";
 import PulseLine from "@/components/PulseLine";
 import ActivityLog, { LogEntry } from "@/components/ActivityLog";
 import TopicChecklist from "@/components/TopicChecklist";
 import HookPicker from "@/components/HookPicker";
 import PostApprovalCard from "@/components/PostApprovalCard";
+import ErrorBanner from "@/components/ErrorBanner";
 import { Draft, RankedTopic, ResearchBrief, RunRecord, Topic, TopicHooks } from "@/lib/types";
 
 function newRun(): RunRecord {
@@ -39,15 +40,20 @@ function phaseForRun(r: RunRecord): Phase | null {
 
 type Phase = "ideas" | "researching" | "topics" | "developing" | "hooks" | "writing" | "review" | "done";
 
-async function postJson<T>(url: string, body: unknown): Promise<T> {
+async function postJson<T>(url: string, body: unknown, signal?: AbortSignal): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    signal,
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || `Request to ${url} failed`);
   return data as T;
+}
+
+function isAbortError(e: unknown): boolean {
+  return e instanceof Error && e.name === "AbortError";
 }
 
 function persistRun(r: RunRecord) {
@@ -69,6 +75,12 @@ export default function PipelinePage() {
   const [resumable, setResumable] = useState<RunRecord | null>(null);
   const [checkedResume, setCheckedResume] = useState(false);
   const [finalCost, setFinalCost] = useState<number | null>(null);
+
+  const abortRef = useRef<AbortController | null>(null);
+
+  function cancelInFlight() {
+    abortRef.current?.abort();
+  }
 
   const [log, setLog] = useState<LogEntry[]>([]);
   function pushLog(text: string, kind: LogEntry["kind"] = "info") {
@@ -145,26 +157,35 @@ export default function PipelinePage() {
     setError(null);
     setPhase("researching");
     pushLog("Researcher: scanning the web for trending topics against your pillars...");
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
       const ideas = ideasInput.split("\n").map((s) => s.trim()).filter(Boolean);
       if (ideas.length) pushLog(`Carrying forward ${ideas.length} idea(s) you typed in`);
-      const research = await postJson<{ topics: Topic[] }>("/api/research", { run_id: run.id });
+      const research = await postJson<{ topics: Topic[] }>("/api/research", { run_id: run.id }, controller.signal);
       pushLog(`Researcher: found ${research.topics.length} topics`, "success");
       pushLog("Ranker: scoring against pillar fit, story potential, and past performance...");
-      const ranked = await postJson<{ ranked_topics: RankedTopic[] }>("/api/rank", {
-        topics: research.topics,
-        ideas,
-        run_id: run.id,
-      });
+      const ranked = await postJson<{ ranked_topics: RankedTopic[] }>(
+        "/api/rank",
+        { topics: research.topics, ideas, run_id: run.id },
+        controller.signal
+      );
       pushLog(`Ranker: shortlisted top ${ranked.ranked_topics.length}`, "success");
       const next = { ...run, ranked_topics: ranked.ranked_topics };
       setRun(next);
       persistRun(next);
       setPhase("topics");
     } catch (e) {
+      if (isAbortError(e)) {
+        pushLog("Discover stage cancelled.");
+        setPhase("ideas");
+        return;
+      }
       pushLog(`Discover stage failed: ${(e as Error).message}`, "error");
       setError((e as Error).message);
       setPhase("ideas");
+    } finally {
+      abortRef.current = null;
     }
   }
 
@@ -184,19 +205,29 @@ export default function PipelinePage() {
     };
     setRun(withTopics);
 
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     // Promise.allSettled (not .all): one topic failing shouldn't throw away
     // the API spend already made on the others.
     const settled = await Promise.allSettled(
       selected.map(async (topic) => {
         pushLog(`Deep-research: "${topic.title}"...`);
-        const brief = await postJson<ResearchBrief>("/api/deep-research", { topic, run_id: run.id });
+        const brief = await postJson<ResearchBrief>("/api/deep-research", { topic, run_id: run.id }, controller.signal);
         pushLog(`Deep-research: "${topic.title}" — found ${brief.stats.length} stats, ${brief.examples.length} examples`, "success");
         pushLog(`Hook factory: "${topic.title}"...`);
-        const hooks = await postJson<TopicHooks>("/api/hooks", { topic, brief, run_id: run.id });
+        const hooks = await postJson<TopicHooks>("/api/hooks", { topic, brief, run_id: run.id }, controller.signal);
         pushLog(`Hook factory: "${topic.title}" — ${hooks.hooks.length} hook options ready`, "success");
         return { topic, brief, hooks };
       })
     );
+    abortRef.current = null;
+
+    if (controller.signal.aborted) {
+      pushLog("Develop stage cancelled.");
+      setPhase("topics");
+      return;
+    }
 
     const newBriefs: Record<string, ResearchBrief> = {};
     const newHooks: TopicHooks[] = [];
@@ -242,17 +273,18 @@ export default function PipelinePage() {
     setRun(withHooks);
 
     const selected = run.ranked_topics.filter((t) => run.selected_topics.includes(t.title));
+    const controller = new AbortController();
+    abortRef.current = controller;
     const settled = await Promise.allSettled(
       selected.map(async (topic) => {
         pushLog(`Writer: drafting "${topic.title}"...`);
-        const draft = await postJson<Draft>("/api/write", {
-          topic,
-          brief: briefs[topic.title],
-          hook: selectedHooks[topic.title],
-          run_id: run.id,
-        });
+        const draft = await postJson<Draft>(
+          "/api/write",
+          { topic, brief: briefs[topic.title], hook: selectedHooks[topic.title], run_id: run.id },
+          controller.signal
+        );
         pushLog(`Writer: "${topic.title}" — ${draft.word_count} words, handing to style editor`);
-        const edited = await postJson<Draft>("/api/edit", { draft, run_id: run.id });
+        const edited = await postJson<Draft>("/api/edit", { draft, run_id: run.id }, controller.signal);
         pushLog(`Style editor: "${topic.title}" — polished (${edited.word_count} words)`, "success");
         if (topic.format === "hot-topic") {
           // Hot-topic/news posts get a native LinkedIn link-preview card.
@@ -261,6 +293,13 @@ export default function PipelinePage() {
         return edited;
       })
     );
+    abortRef.current = null;
+
+    if (controller.signal.aborted) {
+      pushLog("Write stage cancelled.");
+      setPhase("hooks");
+      return;
+    }
 
     const newDrafts: Draft[] = [];
     const failedTitles: string[] = [];
@@ -403,14 +442,7 @@ export default function PipelinePage() {
 
       <ActivityLog entries={log} />
 
-      {error && (
-        <div
-          className="p-3 mb-6 text-sm font-mono animate-phase-in"
-          style={{ border: "1px solid oklch(0.65 0.2 25 / 0.5)", color: "var(--danger)" }}
-        >
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner message={error} className="mb-6 animate-phase-in" />}
 
       <div key={phase} className="animate-phase-in">
         {phase === "ideas" && (
@@ -424,6 +456,7 @@ export default function PipelinePage() {
               value={ideasInput}
               onChange={(e) => setIdeasInput(e.target.value)}
               placeholder="I built a tool that..."
+              aria-label="Topics or ideas for this week"
             />
             <div>
               <button className="btn-primary text-[15px]" onClick={startResearch}>
@@ -433,15 +466,36 @@ export default function PipelinePage() {
           </div>
         )}
 
-        {phase === "researching" && <PulseLine label="SCANNING — researching trending topics, ranking the top 8..." />}
+        {phase === "researching" && (
+          <div className="space-y-4">
+            <PulseLine label="SCANNING — researching trending topics, ranking the top 8..." />
+            <button className="btn-outline btn-sm" onClick={cancelInFlight}>
+              Cancel
+            </button>
+          </div>
+        )}
 
         {phase === "topics" && <TopicChecklist topics={run.ranked_topics} onContinue={onTopicsChosen} />}
 
-        {phase === "developing" && <PulseLine label="DEVELOPING — deep-researching your picks, forging hooks..." />}
+        {phase === "developing" && (
+          <div className="space-y-4">
+            <PulseLine label="DEVELOPING — deep-researching your picks, forging hooks..." />
+            <button className="btn-outline btn-sm" onClick={cancelInFlight}>
+              Cancel
+            </button>
+          </div>
+        )}
 
         {phase === "hooks" && <HookPicker topicHooks={hooksByTopic} onContinue={onHooksChosen} />}
 
-        {phase === "writing" && <PulseLine label="WRITING — drafting in your voice, polishing..." />}
+        {phase === "writing" && (
+          <div className="space-y-4">
+            <PulseLine label="WRITING — drafting in your voice, polishing..." />
+            <button className="btn-outline btn-sm" onClick={cancelInFlight}>
+              Cancel
+            </button>
+          </div>
+        )}
 
         {phase === "review" && (
           <div className="space-y-4">

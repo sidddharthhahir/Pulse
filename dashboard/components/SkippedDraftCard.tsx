@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import PostApprovalCard from "./PostApprovalCard";
-import { Decision, Draft, RunRecord } from "@/lib/types";
+import ErrorBanner from "./ErrorBanner";
+import { mutateRun } from "@/lib/mutate-run";
+import { Decision, Draft } from "@/lib/types";
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -13,16 +15,6 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || `Request to ${url} failed`);
   return data as T;
-}
-
-// Fetches the full run (so we don't clobber other drafts' decisions in it),
-// applies a mutation, and saves it back.
-async function mutateRun(runId: string, mutate: (run: RunRecord) => RunRecord): Promise<void> {
-  const res = await fetch("/api/runs");
-  const data = (await res.json()) as { runs: RunRecord[] };
-  const run = data.runs.find((r) => r.id === runId);
-  if (!run) throw new Error("Run not found");
-  await postJson("/api/runs", mutate(run));
 }
 
 // A draft that was skipped still cost real API spend to write — this card
@@ -55,61 +47,74 @@ export default function SkippedDraftCard({ runId, draft: initialDraft }: { runId
   }
 
   async function handleSchedule(isoDateTime: string) {
-    await postJson("/api/scheduled", {
-      run_id: runId,
-      topic_title: draft.topic_title,
-      pillar: draft.pillar,
-      text: draft.text,
-      image_path: draft.image_path,
-      article_url: draft.source_url,
-      scheduled_at: isoDateTime,
-    });
-    await mutateRun(runId, (run) => ({
-      ...run,
-      decisions: { ...run.decisions, [draft.topic_title]: { decision: "approved", scheduled_at: isoDateTime } },
-    }));
-    setDecision("approved");
-    setScheduledAt(isoDateTime);
+    setError(null);
+    try {
+      await postJson("/api/scheduled", {
+        run_id: runId,
+        topic_title: draft.topic_title,
+        pillar: draft.pillar,
+        text: draft.text,
+        image_path: draft.image_path,
+        article_url: draft.source_url,
+        scheduled_at: isoDateTime,
+      });
+      await mutateRun(runId, (run) => ({
+        ...run,
+        decisions: { ...run.decisions, [draft.topic_title]: { decision: "approved", scheduled_at: isoDateTime } },
+      }));
+      setDecision("approved");
+      setScheduledAt(isoDateTime);
+    } catch (e) {
+      setError(`Failed to schedule: ${(e as Error).message}`);
+    }
   }
 
   async function handleRevise(feedback: string) {
-    const revised = await postJson<Draft>("/api/edit", { draft, feedback, run_id: runId });
-    const withMeta = { ...revised, image_path: draft.image_path, source_url: draft.source_url };
-    setDraft(withMeta);
-    await mutateRun(runId, (run) => ({
-      ...run,
-      drafts: run.drafts.map((d) => (d.topic_title === draft.topic_title ? withMeta : d)),
-      decisions: { ...run.decisions, [draft.topic_title]: { decision: "revised", final_text: withMeta.text } },
-    }));
+    setError(null);
+    try {
+      const revised = await postJson<Draft>("/api/edit", { draft, feedback, run_id: runId });
+      const withMeta = { ...revised, image_path: draft.image_path, source_url: draft.source_url };
+      setDraft(withMeta);
+      await mutateRun(runId, (run) => ({
+        ...run,
+        drafts: run.drafts.map((d) => (d.topic_title === draft.topic_title ? withMeta : d)),
+        decisions: { ...run.decisions, [draft.topic_title]: { decision: "revised", final_text: withMeta.text } },
+      }));
+    } catch (e) {
+      setError(`Failed to revise: ${(e as Error).message}`);
+    }
   }
 
   async function handleSkip() {
-    await mutateRun(runId, (run) => ({
-      ...run,
-      decisions: { ...run.decisions, [draft.topic_title]: { decision: "skipped" } },
-    }));
-    setDecision("skipped");
+    setError(null);
+    try {
+      await mutateRun(runId, (run) => ({
+        ...run,
+        decisions: { ...run.decisions, [draft.topic_title]: { decision: "skipped" } },
+      }));
+      setDecision("skipped");
+    } catch (e) {
+      setError(`Failed to skip: ${(e as Error).message}`);
+    }
   }
 
   async function handleAttachImage(imagePath: string | undefined) {
+    setError(null);
     const withImage = { ...draft, image_path: imagePath };
     setDraft(withImage);
-    await mutateRun(runId, (run) => ({
-      ...run,
-      drafts: run.drafts.map((d) => (d.topic_title === draft.topic_title ? withImage : d)),
-    }));
+    try {
+      await mutateRun(runId, (run) => ({
+        ...run,
+        drafts: run.drafts.map((d) => (d.topic_title === draft.topic_title ? withImage : d)),
+      }));
+    } catch (e) {
+      setError(`Failed to attach image: ${(e as Error).message}`);
+    }
   }
 
   return (
     <div>
-      {error && (
-        <div
-          className="font-mono text-[12.5px] px-3.5 py-2.5 mb-2"
-          style={{ border: "1px solid oklch(0.65 0.2 25 / 0.5)", color: "var(--danger)" }}
-        >
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner message={error} className="mb-2" />}
       <PostApprovalCard
         runId={runId}
         draft={draft}
