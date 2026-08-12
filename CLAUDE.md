@@ -35,6 +35,8 @@ pipeline_state/                   →  run history, drafts, schedule, usage — 
 - `staticBlock()` / `dynamicBlock()` (also in `lib/claude.ts`) split prompts into a cached static prefix (KB text, instructions) and an uncached dynamic suffix (per-topic data) — this is what makes prompt caching actually hit across the 3 topics in one run. Don't collapse these back into a single string; that silently kills the cache.
 - Per-run usage is tracked via `recordRunUsage` (pass `run_id` through `createTracked`) so the dashboard can show what one run cost, not just a monthly total.
 
+**If the dashboard is set up to run 24/7, it's as a launchd LaunchAgent** (`~/Library/LaunchAgents/com.pulse.dashboard.plist` on macOS, if the user has followed the 24/7 setup) — `next dev -p 3000` running continuously with KeepAlive + RunAtLoad, so it survives crashes and reboots without anyone starting it by hand. This means **`npm run build` must never be run directly in `dashboard/` while that service might be live** — it shares the `.next` output directory with the running `next dev` process and corrupts it, breaking every page's styling until the service is killed and restarted with `.next` deleted (this happened once already, mid-session, from exactly this). If a production-build check is genuinely needed, use a separate `distDir` or check it in an isolated worktree — don't build in-place while the service is running. Check with `launchctl list | grep pulse`; logs land in `pipeline_state/dashboard.log`.
+
 ---
 
 ## Key files
