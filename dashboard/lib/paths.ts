@@ -9,6 +9,7 @@ export const RUNS_DIR = path.join(PIPELINE_STATE_DIR, "runs");
 export const RUN_USAGE_DIR = path.join(PIPELINE_STATE_DIR, "run_usage");
 export const SCHEDULED_DIR = path.join(PIPELINE_STATE_DIR, "scheduled");
 export const LINKEDIN_TOKEN_META_PATH = path.join(PIPELINE_STATE_DIR, "linkedin_token_meta.json");
+export const LINKEDIN_ANALYTICS_STATUS_PATH = path.join(PIPELINE_STATE_DIR, "linkedin_analytics_status.json");
 export const SCRIPTS_DIR = path.join(REPO_ROOT, "scripts");
 export const ENV_PATH = path.join(REPO_ROOT, ".env");
 export const VISUALS_DIR = path.join(process.cwd(), "public", "visuals");

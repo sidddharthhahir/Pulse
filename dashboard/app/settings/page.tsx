@@ -4,6 +4,7 @@ import { readKb } from "@/lib/knowledge-base";
 import { ENV_PATH } from "@/lib/paths";
 import { getPerformanceStatus } from "@/lib/analytics";
 import TokenStatus from "@/components/TokenStatus";
+import AnalyticsSyncStatus from "@/components/AnalyticsSyncStatus";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,7 @@ export default async function SettingsPage() {
           okText={`Active — ranking and hooks now favor what's worked across ${performance.count} scored posts`}
           badText={`Not active yet — ${performance.count}/${performance.threshold} posts logged. Log performance in Drafts to activate.`}
         />
+        <AnalyticsSyncStatus />
       </div>
 
       <div className="panel-outline px-8 py-7 mb-6">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createTracked, MODEL, extractJson, textFromMessage, staticBlock, dynamicBlock } from "@/lib/claude";
 import { readAllKb } from "@/lib/knowledge-base";
+import { getPerformanceInsights } from "@/lib/analytics";
 import { Draft, PostFormat, RankedTopic, ResearchBrief } from "@/lib/types";
 
 // Structural skeletons for the two non-default formats — "standard" and
@@ -39,6 +40,8 @@ export async function POST(req: Request) {
       run_id?: string;
     };
     const kb = await readAllKb();
+    const insights = await getPerformanceInsights();
+    const today = new Date().toISOString().slice(0, 10);
 
     // The hook is already chosen — its candidates are dead weight at this stage.
     const { hook_candidates: _dropped, ...briefForWriter } = brief;
@@ -71,11 +74,13 @@ Write the complete post now, following the content rules exactly (structure, len
 This is a feed post someone skims in three seconds, not an article someone sits down to read. Before you write, plan which 2+ points become an arrow list (→) instead of a paragraph — almost every post has at least one. Keep sentences short and vary their length; no sentence over ~20 words, never three same-length sentences back to back. If you catch yourself writing a compound sentence stacking two ideas with a colon or semicolon, split it into two lines instead.`),
             // Differs per topic — never cached.
             dynamicBlock(`## Topic
+Today's date: ${today}. Ground the post in what's actually current — don't lean on an older stat or example from the brief if it reads as dated; a specific recent detail beats a well-worn one.
 Title: ${topic.title}
 Angle: ${topic.angle}
 Pillar: ${topic.pillar}
 Research brief: ${JSON.stringify(briefForWriter, null, 2)}
 ${formatGuidance(topic.format) ? `\n${formatGuidance(topic.format)}\n` : ""}
+${insights ? `\n${insights}\n` : ""}
 ## Required hook
 Use this exact text as the opening line (line 1-2), followed by ONE blank line, then the body:
 "${hook}"
