@@ -1,8 +1,29 @@
 import fs from "fs/promises";
-import { KB_FILES, KbSection } from "./paths";
+import path from "path";
+import { KB_DIR, KB_FILES, KbSection } from "./paths";
+
+// profile.md and writing_samples.md are gitignored (they're the user's real
+// identity/voice, not something to commit) and never shipped in the repo, so
+// a fresh clone has neither — only these checked-in *.example.md templates.
+// Seed the real file from its template on first read so the Knowledge page
+// has the "placeholder template" CLAUDE.md tells a fresh setup to expect,
+// instead of a 500 from a missing file.
+const TEMPLATES: Partial<Record<KbSection, string>> = {
+  profile: "profile.example.md",
+  writing_samples: "writing_samples.example.md",
+};
 
 export async function readKb(section: KbSection): Promise<string> {
-  return fs.readFile(KB_FILES[section], "utf-8");
+  try {
+    return await fs.readFile(KB_FILES[section], "utf-8");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+    const template = TEMPLATES[section];
+    if (!template) return ""; // strategy_log.md: append-only, starts empty
+    const seed = await fs.readFile(path.join(KB_DIR, template), "utf-8");
+    await fs.writeFile(KB_FILES[section], seed, "utf-8");
+    return seed;
+  }
 }
 
 export async function writeKb(section: KbSection, content: string): Promise<void> {

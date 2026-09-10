@@ -1,8 +1,9 @@
 """
 CLI wrapper for publishing a LinkedIn post.
 
-Called by the Claude Code pipeline (Case B) via Bash.
-Notion archiving is handled directly via Notion MCP in the orchestrator.
+Called by the dashboard's /api/publish route via execFile — the approve-click
+path. publish_scheduled.py posts scheduled items separately, straight
+through integrations/linkedin.py.
 
 Usage:
     python scripts/publish_post.py --topic "Topic Title" --text "Full post text"

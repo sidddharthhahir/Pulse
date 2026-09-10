@@ -21,11 +21,13 @@ dashboard/tsconfig.tsbuildinfo
 pipeline_state/
 
 # Your personal setup facts (name, email, resume, LinkedIn URL) — used once
-# to bootstrap /setup, never meant to be shared or committed.
+# to bootstrap the Knowledge page, never meant to be shared or committed.
 HANDOFF_PROMPT.md
 
-# Personalized once /setup runs — starts as a clean template in the repo,
-# your real answers should stay local only.
+# Your real identity/voice, not something to commit. profile.md and
+# writing_samples.md are seeded from the tracked *.example.md templates on
+# first read (see dashboard/lib/knowledge-base.ts) — edit the real files
+# from the Knowledge page afterward; only the templates stay in git.
 knowledge_base/profile.md
 knowledge_base/writing_samples.md
 knowledge_base/strategy_log.md
