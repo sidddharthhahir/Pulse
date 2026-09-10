@@ -75,4 +75,4 @@ Contributions are welcome. Open an issue to discuss changes, then submit a focus
 
 ## License / Contact
 
-No license file is currently declared in this repository. For usage or collaboration inquiries, contact the repository owner: @sidddharthhahir.
+Licensed under [MIT](LICENSE). For usage or collaboration inquiries, contact the repository owner: @sidddharthhahir.
